@@ -17,6 +17,7 @@ const user = require("./routes/user");
 const auth = require("./routes/auth");
 const image = require("./routes/image");
 const place = require("./routes/place");
+const comment = require("./routes/comment");
 
 const app = express();
 dbConnect();
@@ -58,6 +59,7 @@ app.use("/auth", auth);
 app.use("/image", image);
 app.use("/place", place);
 app.use("/user", user);
+app.use("/comment", comment);
 app.use("/", index);
 
 // catch 404 and forward to error handler

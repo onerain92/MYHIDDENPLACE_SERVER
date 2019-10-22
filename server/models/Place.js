@@ -38,10 +38,6 @@ const placeSchema = new mongoose.Schema({
       required: true
     }
   },
-  comment: {
-    type: ObjectId,
-    ref: "Comment"
-  },
   tag: [
     {
       type: ObjectId,
@@ -50,6 +46,6 @@ const placeSchema = new mongoose.Schema({
   ]
 });
 
-placeSchema.index({ location: '2dsphere' });
+placeSchema.index({ location: "2dsphere" });
 
 module.exports = mongoose.model("Place", placeSchema);

@@ -136,7 +136,8 @@ router.post("/upload", async (req, res, next) => {
 
 router.get("/:place_id", async (req, res, next) => {
   try {
-    const placeDetails = await Place.findById(req.params.place_id);
+    const placeId = req.params.place_id;
+    const placeDetails = await Place.findById(placeId);
     const placeDetailsDoc = JSON.parse(JSON.stringify(placeDetails._doc));
     const createUser = await User.findById(placeDetailsDoc.created_by);
     const tagName = await Promise.all(
