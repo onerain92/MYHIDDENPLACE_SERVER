@@ -1,0 +1,161 @@
+const express = require("express");
+const router = express.Router();
+const User = require("../models/User");
+const Place = require("../models/Place");
+const Tag = require("../models/Tag");
+
+router.get("/", async (req, res, next) => {
+  try {
+    const place = await Place.find();
+    const placeInfo = await Promise.all(
+      place.map(async place => {
+        const placeDoc = JSON.parse(JSON.stringify(place._doc));
+        const createUser = await User.findById(place.created_by);
+        const tagName = await Promise.all(
+          place.tag.map(async tag => {
+            const foundTagName = await Tag.findById(tag);
+            return foundTagName.name;
+          })
+        );
+
+        placeDoc.created_by = createUser.username;
+        placeDoc.tag = tagName;
+
+        return placeDoc;
+      })
+    );
+
+    return res.status(200).send(placeInfo);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send({ errorMessage: "Internal Server Error" });
+  }
+});
+
+router.get("/search", async (req, res, next) => {
+  try {
+    let serachInput = req.query.word;
+    const reg = new RegExp("^" + serachInput);
+    const tagId = await Tag.find({ name: { $regex: reg } });
+    const tagedPlace = await Promise.all(
+      tagId.map(async tag => {
+        const tagIdDoc = JSON.parse(JSON.stringify(tag._doc));
+        const selectedPlace = await Place.find({ tag: { _id: tagIdDoc._id } });
+
+        return selectedPlace;
+      })
+    );
+
+    if (tagedPlace.length === 0) {
+      return res
+        .status(400)
+        .send({
+          searchedPlace: [],
+          isSearched: false,
+          searchFailMessage: "검색 결과가 없습니다."
+        });
+    }
+
+    const searchedPlace = tagedPlace[0].map(place => {
+      return place;
+    });
+
+    const searchedPlaceInfo = await Promise.all(
+      searchedPlace.map(async searchedPlace => {
+        const searchedPlaceDoc = JSON.parse(JSON.stringify(searchedPlace._doc));
+        const createUser = await User.findById(searchedPlace.created_by);
+        const tagName = await Promise.all(
+          searchedPlace.tag.map(async tag => {
+            const foundTagName = await Tag.findById(tag);
+            return foundTagName.name;
+          })
+        );
+
+        searchedPlaceDoc.created_by = createUser.username;
+        searchedPlaceDoc.tag = tagName;
+
+        return searchedPlaceDoc;
+      })
+    );
+
+    return res.status(200).send({ searchedPlaceInfo, isSearched: true });
+  } catch (err) {
+    console.error(err);
+    return res
+      .status(400)
+      .send({ searchFailMessage: "검색을 실패했습니다.", isSearched: false });
+  }
+});
+
+router.post("/upload", async (req, res, next) => {
+  const tags = req.body.tags;
+  const { title, description, address, latlng, imgfile } = req.body.placeInfo;
+
+  try {
+    try {
+      await Promise.all(
+        tags.map(async tag => {
+          await Tag.findOneAndUpdate(
+            { name: tag },
+            { name: tag },
+            { upsert: true }
+          );
+        })
+      );
+    } catch (err) {
+      console.error(err);
+    }
+
+    const updatedId = await Promise.all(
+      tags.map(async tag => {
+        const foundTag = await Tag.findOne({ name: tag });
+        return foundTag._id;
+      })
+    );
+
+    await Place.create({
+      title,
+      created_by: req.user,
+      created_at: new Date(),
+      place_picture: imgfile,
+      description,
+      address,
+      location: {
+        type: "Point",
+        coordinates: [latlng.lng, latlng.lat]
+      },
+      tag: updatedId
+    });
+
+    return res.status(200).send({ successMessage: "placeinfo 업로드 성공" });
+  } catch (err) {
+    console.error(err);
+    return res.status(400).send({ errorMessage: "placeinfo 업로드 실패" });
+  }
+});
+
+router.get("/:place_id", async (req, res, next) => {
+  try {
+    const placeDetails = await Place.findById(req.params.place_id);
+    const placeDetailsDoc = JSON.parse(JSON.stringify(placeDetails._doc));
+    const createUser = await User.findById(placeDetailsDoc.created_by);
+    const tagName = await Promise.all(
+      placeDetailsDoc.tag.map(async tag => {
+        const foundTagName = await Tag.findById(tag);
+        return foundTagName.name;
+      })
+    );
+
+    placeDetailsDoc.created_by = createUser.username;
+    placeDetailsDoc.tag = tagName;
+
+    return res.status(200).send({ placeDetails: placeDetailsDoc });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send({
+      placeDetailsErrorMessage: "상세페이지를 불러오기를 실패했습니다."
+    });
+  }
+});
+
+module.exports = router;
