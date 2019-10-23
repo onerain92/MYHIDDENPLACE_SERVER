@@ -16,16 +16,28 @@ router.get("/", isSignedIn, (req, res, next) => {
   }
 });
 
-router.put("/favorite", async (req, res, next) => {
-  const placeId = req.body.placeId;
+router.put("/:place_id", async (req, res, next) => {
+  const placeId = req.params.place_id;
 
   const favoriteList = await User.findByIdAndUpdate(
     { _id: req.user._id },
-    { "$push": { "favorite": placeId } },
-    { "upsert": true }
+    { $push: { favorite: placeId } },
+    { new: true, upsert: true }
   ).select("-_id favorite");
 
-  console.log(favoriteList);
+  return res.status(200).send({ favoriteList });
+});
+
+router.put("/remove/:place_id", async (req, res, next) => {
+  const placeId = req.params.place_id;
+
+  const favoriteList = await User.findByIdAndUpdate(
+    { _id: req.user._id },
+    { $pull: { favorite: placeId } },
+    { new: true }
+  ).select("-_id favorite");
+
+  return res.status(200).send({ favoriteList });
 });
 
 module.exports = router;
