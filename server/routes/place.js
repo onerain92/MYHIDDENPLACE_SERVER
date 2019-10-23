@@ -3,6 +3,7 @@ const router = express.Router();
 const User = require("../models/User");
 const Place = require("../models/Place");
 const Tag = require("../models/Tag");
+const Comment = require("../models/Comment");
 
 router.get("/", async (req, res, next) => {
   try {
@@ -47,13 +48,11 @@ router.get("/search", async (req, res, next) => {
     );
 
     if (tagedPlace.length === 0) {
-      return res
-        .status(400)
-        .send({
-          searchedPlace: [],
-          isSearched: false,
-          searchFailMessage: "검색 결과가 없습니다."
-        });
+      return res.status(400).send({
+        searchedPlace: [],
+        isSearched: false,
+        searchFailMessage: "검색 결과가 없습니다."
+      });
     }
 
     const searchedPlace = tagedPlace[0].map(place => {
@@ -85,6 +84,73 @@ router.get("/search", async (req, res, next) => {
       .status(400)
       .send({ searchFailMessage: "검색을 실패했습니다.", isSearched: false });
   }
+});
+
+router.get("/myplace/:user_id", async (req, res, next) => {
+  const userId = req.params.user_id;
+  const myPlaces = await Place.find({ created_by: userId });
+
+  if (myPlaces.length === 0) {
+    return res
+      .status(400)
+      .send({ myPlaceErrorMessage: "등록한 장소가 없습니다." });
+  }
+
+  const myPlaceInfo = await Promise.all(
+    myPlaces.map(async myplace => {
+      const myPlaceDoc = JSON.parse(JSON.stringify(myplace._doc));
+      const tagName = await Promise.all(
+        myplace.tag.map(async tag => {
+          const foundTagName = await Tag.findById(tag);
+          return foundTagName.name;
+        })
+      );
+      myPlaceDoc.tag = tagName;
+      return myPlaceDoc;
+    })
+  );
+
+  return res.status(200).send(myPlaceInfo);
+});
+
+router.get("/favorite/:user_id", async (req, res, next) => {
+  const userId = req.params.user_id;
+  const myFavoriteList = await User.findById({ _id: userId }).select(
+    "-_id favorite"
+  );
+
+  const myFavoritePlace = await Promise.all(
+    myFavoriteList.favorite.map(async favor => {
+      const favoritePlace = await Place.findById({ _id: favor });
+      return favoritePlace;
+    })
+  );
+
+  const myFavoritePlaceInfo = await Promise.all(
+    myFavoritePlace.map(async favoritePlace => {
+      const favoritePlaceDoc = JSON.parse(JSON.stringify(favoritePlace._doc));
+      const tagName = await Promise.all(
+        favoritePlace.tag.map(async tag => {
+          const foundTagName = await Tag.findById(tag);
+          return foundTagName.name;
+        })
+      );
+      favoritePlaceDoc.tag = tagName;
+      return favoritePlaceDoc;
+    })
+  );
+
+  return res.status(200).send(myFavoritePlaceInfo);
+});
+
+router.delete("/myplace/:myplace_id", async (req, res, next) => {
+  const myPlaceId = req.params.myplace_id;
+  await Place.findByIdAndDelete({ _id: myPlaceId });
+  await Comment.findByIdAndDelete({ place: myPlaceId });
+
+  return res
+    .status(200)
+    .send({ deleteMyPlaceSuccessMessage: "장소를 삭제하였습니다." });
 });
 
 router.post("/upload", async (req, res, next) => {
@@ -127,10 +193,10 @@ router.post("/upload", async (req, res, next) => {
       tag: updatedId
     });
 
-    return res.status(200).send({ successMessage: "placeinfo 업로드 성공" });
+    return res.status(200).send({ successMessage: "장소 정보 업로드 성공" });
   } catch (err) {
     console.error(err);
-    return res.status(400).send({ errorMessage: "placeinfo 업로드 실패" });
+    return res.status(400).send({ errorMessage: "장소 정보 업로드 실패" });
   }
 });
 
