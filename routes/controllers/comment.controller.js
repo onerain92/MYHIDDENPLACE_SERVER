@@ -18,7 +18,7 @@ exports.createComment = async (req, res, next) => {
 exports.getComment = async (req, res, next) => {
   try {
     const placeId = req.params.place_id;
-    const comments = await Comment.find({ place: placeId });
+    const comments = await Comment.find({ place: placeId }).sort({ created_at: "desc" });
     const commentsInfo = await Promise.all(
       comments.map(async comment => {
         const commentDoc = JSON.parse(JSON.stringify(comment._doc));
