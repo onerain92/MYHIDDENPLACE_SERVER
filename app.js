@@ -12,7 +12,6 @@ require("dotenv").config();
 const dbConnect = require("./config");
 const passportConfig = require("./passport/index");
 
-const index = require("./routes/index");
 const user = require("./routes/user");
 const auth = require("./routes/auth");
 const image = require("./routes/image");
@@ -60,7 +59,6 @@ app.use("/image", image);
 app.use("/place", place);
 app.use("/user", user);
 app.use("/comment", comment);
-app.use("/", index);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
