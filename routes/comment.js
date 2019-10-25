@@ -3,7 +3,7 @@ const router = express.Router();
 const User = require("../models/User");
 const Comment = require("../models/Comment");
 
-router.post("/register", async (req, res, next) => {
+router.post("/", async (req, res, next) => {
   const { placeId, text, score } = req.body;
 
   await Comment.create({
@@ -41,7 +41,7 @@ router.get("/:place_id", async (req, res, next) => {
       (accumulator, currentValue) => accumulator + currentValue.evaluation,
       initialValue
     );
-    const avgScore = sum / commentsInfo.length;
+    const avgScore = Number(sum / commentsInfo.length).toFixed(1);
 
     return res.status(200).send({ comments: commentsInfo, avgScore });
   } catch (err) {
