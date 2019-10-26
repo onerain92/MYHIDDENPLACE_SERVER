@@ -34,9 +34,9 @@ jobs:
           name: Deploy to env
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
-                eb deploy MyhiddenplaceSever
+                eb deploy MyhiddenplaceServer-env
             else
-                eb deploy MyhiddenplaceSever-development
+                eb deploy MyhiddenplaceServer-env-development
             fi
 workflows:
   version: 2
