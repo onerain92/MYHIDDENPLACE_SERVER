@@ -29,7 +29,7 @@ app.set("view engine", "ejs");
 app.use(logger("dev"));
 app.use(
   cors({
-    origin: "https://www.myhiddenplaces.com",
+    origin: process.env.CLIENT_ADDRESS,
     methods: "GET, HEAD, PUT, PATCH, POST, DELETE",
     credentials: true
   })
