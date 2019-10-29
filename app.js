@@ -22,14 +22,10 @@ const app = express();
 dbConnect();
 passportConfig(passport);
 
-// view engine setup
-app.set("views", path.join(__dirname, "views"));
-app.set("view engine", "ejs");
-
 app.use(logger("dev"));
 app.use(
   cors({
-    origin: process.env.CLIENT_ADDRESS,
+    origin: "http://localhost:3000",
     methods: "GET, HEAD, PUT, PATCH, POST, DELETE",
     credentials: true
   })
