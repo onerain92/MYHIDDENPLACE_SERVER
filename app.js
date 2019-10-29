@@ -29,7 +29,7 @@ app.set("view engine", "ejs");
 app.use(logger("dev"));
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: "https://www.myhiddenplaces.com",
     methods: "GET, HEAD, PUT, PATCH, POST, DELETE",
     credentials: true
   })
