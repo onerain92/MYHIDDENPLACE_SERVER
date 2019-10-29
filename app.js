@@ -25,7 +25,7 @@ passportConfig(passport);
 app.use(logger("dev"));
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: process.env.CLIENT_ADDRESS,
     methods: "GET, HEAD, PUT, PATCH, POST, DELETE",
     credentials: true
   })
