@@ -29,7 +29,7 @@ app.set("view engine", "ejs");
 app.use(logger("dev"));
 app.use(
   cors({
-    origin: process.env.CLIENT_ADDRESS,
+    origin: "http://localhost:3000",
     methods: "GET, HEAD, PUT, PATCH, POST, DELETE",
     credentials: true
   })
