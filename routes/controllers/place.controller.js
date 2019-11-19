@@ -143,12 +143,36 @@ exports.getMyFavorite = async (req, res, next) => {
 
 exports.deleteMyPlace = async (req, res, next) => {
   const myPlaceId = req.params.myplace_id;
+  const userId = req.params.user_id;
+
   await Place.findByIdAndDelete({ _id: myPlaceId });
-  await Comment.findByIdAndDelete({ place: myPlaceId });
+  await Comment.findOneAndDelete({ place: myPlaceId });
+
+  const myPlaces = await Place.find({ created_by: userId });
+
+  if (myPlaces.length === 0) {
+    return res
+      .status(200)
+      .send({ myPlaceErrorMessage: "등록한 장소가 없습니다.", myPlaceInfo: [] });
+  }
+
+  const myPlaceInfo = await Promise.all(
+    myPlaces.map(async myplace => {
+      const myPlaceDoc = JSON.parse(JSON.stringify(myplace._doc));
+      const tagName = await Promise.all(
+        myplace.tag.map(async tag => {
+          const foundTagName = await Tag.findById(tag);
+          return foundTagName.name;
+        })
+      );
+      myPlaceDoc.tag = tagName;
+      return myPlaceDoc;
+    })
+  );
 
   return res
     .status(200)
-    .send({ deleteMyPlaceSuccessMessage: "장소를 삭제하였습니다." });
+    .send({ deleteMyPlaceSuccessMessage: "장소를 삭제하였습니다.", myPlaceInfo });
 };
 
 exports.createPlace = async (req, res, next) => {

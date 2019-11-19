@@ -6,7 +6,7 @@ router.get("/", placeController.getPlaceAll);
 router.get("/search", placeController.getSearchedPlace);
 router.get("/myplace/:user_id", placeController.getMyPlace);
 router.get("/favorite/:user_id", placeController.getMyFavorite);
-router.delete("/myplace/:myplace_id", placeController.deleteMyPlace);
+router.delete("/myplace/:myplace_id/:user_id", placeController.deleteMyPlace);
 router.post("/create", placeController.createPlace);
 router.get("/:place_id", placeController.getPlaceDetails);
 
