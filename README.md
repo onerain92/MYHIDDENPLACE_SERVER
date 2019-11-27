@@ -151,6 +151,7 @@ npm test
 * 내가 올린 장소의 상세 내용 및 댓글 수정 기능.
 * 장소 추가시 여러 이미지 업로드 기능.
 * 장소 상세 페이지에서 Carousel image 기능.
+* 업로드 이미지 재조정 및 용량 압축.
 * End-To-End Test 추가.
 
 ## Sincere Thanks
