@@ -70,7 +70,7 @@ describe("Test with mongoDB database", function() {
     const placeId = "5dde0256f3890c35f68cb3d4";
 
     it("should return all comments of the place", function(done) {
-      this.timeout(5000);
+      this.timeout(8000);
 
       chai
         .request(app)
